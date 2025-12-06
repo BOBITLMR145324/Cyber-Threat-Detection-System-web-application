@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CTDS - Cyber Threat Detection System</title>
+    <!-- Tailwind CSS (via CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Bootstrap CSS (required for modals) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Custom styles for aesthetic enhancements */
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1f2937 0%, #0a0e14 100%); /* Dark gradient background */
+        }
+        .hero-card {
+            background-color: rgba(31, 41, 55, 0.9); /* Slightly transparent dark background */
+            backdrop-filter: blur(5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
+            animation: fadeIn 1s ease-in;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        /* Custom Button Styling */
+        .btn-action {
+            /* Ensures smooth transition for all properties including color */
+            transition: all 0.3s ease-in-out; 
+            border: 2px solid transparent;
+            color: #000000; /* Default text color: Black */
+        }
+
+        /* Login Button Hover Effect (Maintained background, text to white) */
+        .btn-login:hover {
+            background-color: #4f46e5; /* Brighter indigo (Maintained hover color) */
+            border-color: #818cf8;
+            transform: scale(1.02);
+            box-shadow: 0 0 15px rgba(79, 70, 229, 0.6);
+            color: #ffffff; /* Text color change to White on hover */
+        }
+
+        /* Secondary Button Hover Effect (Maintained background, text to white) */
+        .btn-secondary-action:hover {
+            background-color: #4b5563; /* Lighter gray (Maintained hover color) */
+            border-color: #6b7280;
+            transform: scale(1.02);
+            box-shadow: 0 0 10px rgba(107, 114, 128, 0.4);
+            color: #ffffff; /* Text color change to White on hover */
+        }
+
+        /* Modal/Form Styling */
+        .modal-content-custom {
+            background-color: #2c3e50; /* Dark blue/gray background for forms */
+            color: #d1d5db; /* Light text */
+            border: 1px solid #4f46e5; /* Indigo border */
+            box-shadow: 0 0 20px rgba(79, 70, 229, 0.3); /* Form glow/hover effect */
+        }
+        .modal-header-custom {
+            background-color: #1f2937; /* Darker header */
+        }
+        .close-btn {
+            background: none;
+            border: none;
+            color: #d1d5db;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+            padding: 0.5rem;
+            margin: -0.5rem; /* For better click target */
+        }
+        .close-btn:hover {
+            color: #ff0000;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+    <div class="container mx-auto max-w-lg">
+        <!-- Hero Section -->
+        <div class="hero-card p-8 rounded-xl text-center text-white">
+            <i class="fas fa-shield-alt text-6xl text-indigo-400 mb-4"></i>
+            <h1 class="text-4xl font-extrabold mb-2">Welcome to CTDS</h1>
+            <p class="text-indigo-200 mb-6">Cyber Threat Detection System</p>
+            <p class="text-lg font-semibold mb-8">Securely detect and manage cyber threats with ease.</p>
+            
+            <!-- Welcome back section (static message before login) -->
+            <div class="bg-gray-700 p-4 rounded-lg shadow-inner mb-6">
+                <p class="text-xl font-bold">Please Log In or Register</p> 
+            </div>
+
+            <!-- Flash Messages -->
+            <div class="mb-4">
+                <!-- If get_flashed_messages() returns nothing, this entire block is absent from the DOM. -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="p-3 text-sm rounded-lg text-left 
+                                {% if category == 'danger' %} bg-red-800 text-red-200 border border-red-600 
+                                {% elif category == 'success' %} bg-green-800 text-green-200 border border-green-600 
+                                {% else %} bg-blue-800 text-blue-200 border border-blue-600 
+                                {% endif %}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+                <!-- Login Button: Oval, text-black initially, text-white on hover via custom CSS -->
+                <button class="btn-action btn-login bg-indigo-600 text-black font-bold py-3 px-6 rounded-full shadow-lg" data-bs-toggle="modal" data-bs-target="#loginModal">
+                    <i class="fas fa-sign-in-alt mr-2"></i> Login
+                </button>
+                <!-- Register Button: Oval, text-black initially, text-white on hover via custom CSS -->
+                <button class="btn-action btn-secondary-action bg-gray-600 text-black font-bold py-3 px-6 rounded-full shadow-lg" data-bs-toggle="modal" data-bs-target="#registerModal">
+                    <i class="fas fa-user-plus mr-2"></i> Register
+                </button>
+                <!-- Reset Button: Oval, text-black initially, text-white on hover via custom CSS -->
+                <button class="btn-action btn-secondary-action bg-gray-600 text-black font-bold py-3 px-6 rounded-full shadow-lg" data-bs-toggle="modal" data-bs-target="#resetModal">
+                    <i class="fas fa-key mr-2"></i> Reset Password
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content-custom modal-content rounded-xl">
+                <div class="modal-header modal-header-custom text-white rounded-t-xl flex justify-between items-center border-b border-gray-700">
+                    <h5 class="modal-title font-bold text-xl">CTDS Login</h5>
+                    <!-- Functional 'X' button using Bootstrap dismiss -->
+                    <button type="button" class="close-btn" data-bs-dismiss="modal" aria-label="Close">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+                <div class="modal-body p-6">
+                    <form method="POST" action="/">
+                        <input type="hidden" name="action" value="login">
+                        <div class="mb-4">
+                            <label for="login-username" class="block text-sm font-medium text-indigo-400 mb-1">Username</label>
+                            <input type="text" class="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" id="login-username" name="username" required>
+                        </div>
+                        <div class="mb-4">
+                            <label for="login-password" class="block text-sm font-medium text-indigo-400 mb-1">Password</label>
+                            <input type="password" class="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" id="login-password" name="password" required>
+                        </div>
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-lg transition duration-150 shadow-md">
+                            <i class="fas fa-sign-in-alt mr-1"></i> Sign In
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div class="modal fade" id="registerModal" tabindex="-1">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content-custom modal-content rounded-xl">
+                <div class="modal-header modal-header-custom text-white rounded-t-xl flex justify-between items-center border-b border-gray-700">
+                    <h5 class="modal-title font-bold text-xl">Register New Viewer</h5>
+                    <!-- Functional 'X' button using Bootstrap dismiss -->
+                    <button type="button" class="close-btn" data-bs-dismiss="modal" aria-label="Close">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+                <div class="modal-body p-6">
+                    <form method="POST" action="/">
+                        <input type="hidden" name="action" value="register"> 
+                        <div class="mb-4">
+                            <label for="register-username" class="block text-sm font-medium text-indigo-400 mb-1">Username</label>
+                            <input type="text" class="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" id="register-username" name="username" required>
+                        </div>
+                        <div class="mb-4">
+                            <label for="register-password" class="block text-sm font-medium text-indigo-400 mb-1">Password</label>
+                            <input type="password" class="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" id="register-password" name="password" required>
+                        </div>
+                        <p class="text-xs text-gray-400 mb-4 italic">You will be registered as a default Viewer.</p>
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-lg transition duration-150 shadow-md">
+                            <i class="fas fa-user-plus mr-1"></i> Register
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reset Password Modal -->
+    <div class="modal fade" id="resetModal" tabindex="-1">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content-custom modal-content rounded-xl">
+                <div class="modal-header modal-header-custom text-white rounded-t-xl flex justify-between items-center border-b border-gray-700">
+                    <h5 class="modal-title font-bold text-xl">Reset Password</h5>
+                    <!-- Functional 'X' button using Bootstrap dismiss -->
+                    <button type="button" class="close-btn" data-bs-dismiss="modal" aria-label="Close">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+                <div class="modal-body p-6">
+                    <form method="POST" action="/">
+                        <input type="hidden" name="action" value="reset">
+                        <!-- Instruction Note for the user -->
+                        <p class="text-sm text-yellow-400 mb-4 italic">You must provide your current password to authorize the change.</p>
+                        <div class="mb-4">
+                            <label for="reset-username" class="block text-sm font-medium text-indigo-400 mb-1">Username</label>
+                            <input type="text" class="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" id="reset-username" name="username" required>
+                        </div>
+                        <!-- IMPORTANT: Added 'password' field to satisfy Flask's initial input validation -->
+                        <div class="mb-4">
+                            <label for="reset-password" class="block text-sm font-medium text-indigo-400 mb-1">Current/Old Password</label>
+                            <input type="password" class="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" id="reset-password" name="password" required>
+                        </div>
+                        <!-- End Added Field -->
+                        <div class="mb-4">
+                            <label for="reset-new_password" class="block text-sm font-medium text-indigo-400 mb-1">New Password</label>
+                            <input type="password" class="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" id="reset-new_password" name="new_password" required>
+                        </div>
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-lg transition duration-150 shadow-md">
+                            <i class="fas fa-key mr-1"></i> Reset
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS (required for modals) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
